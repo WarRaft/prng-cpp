@@ -23,6 +23,7 @@ public:
         this->rndacc = seed;
         this->rndvls = (seed + 17 * (seed / 0x2F)) << 26 | (seed % 0x35) << 18 | 4 * (seed % 0x3D) | (seed % 0x3B) <<
                        10;
+        this->rng(); // skip first to match expected sequence
     }
 
     unsigned int rndacc{};
@@ -33,16 +34,20 @@ public:
         int v2 = 184;
         int v3 = 200;
         int v4 = 212;
-        if (reinterpret_cast<unsigned char *>(&rndvl)[3] >= 0x4) v2 = -4;
+        union {
+            unsigned int u;
+            unsigned char b[4];
+        } tmp = {rndvl};
+        if (tmp.b[3] >= 0x4) v2 = -4;
 
-        const signed int v5 = reinterpret_cast<unsigned char *>(&rndvl)[3] + v2;
+        const signed int v5 = tmp.b[3] + v2;
         if ((rndvl & 0xFF0000) >= 0xC0000) v3 = -12;
-        const int v6 = reinterpret_cast<unsigned char *>(&rndvl)[2] + v3;
-        if (reinterpret_cast<unsigned char *>(&rndvl)[1] >= 0x18u) v4 = -24;
-        const int v7 = reinterpret_cast<unsigned char *>(&rndvl)[1] + v4;
+        const int v6 = tmp.b[2] + v3;
+        if (tmp.b[1] >= 0x18u) v4 = -24;
+        const int v7 = tmp.b[1] + v4;
         int v8 = 216;
-        if (static_cast<unsigned char>(rndvl) >= 0x1Cu) v8 = -28;
-        const int v9 = static_cast<unsigned char>(rndvl) + v8;
+        if (tmp.b[0] >= 0x1Cu) v8 = -28;
+        const int v9 = tmp.b[0] + v8;
         const unsigned int v10 = this->rndacc
                                  + (
                                      (*reinterpret_cast<const unsigned int *>((char *) gnoise32_ + v9))
@@ -76,36 +81,13 @@ public:
     float rand(const float a1, const float a2) {
         if (0x3456BF95u > (static_cast<unsigned int>(a1 - a2) & 0x7FFFFFFF)) return a1;
 
-        int e9 = static_cast<int>(rng()) & 0x7FFFFF | 0x3F800000;
+        const int e9 = static_cast<int>(rng()) & 0x7FFFFF | 0x3F800000;
 
-        const float d1 = *reinterpret_cast<float *>(&e9);
-        unsigned int v13 = 0xBF800000;
-        const float d2 = *reinterpret_cast<float *>(&v13);
+        const auto d1 = std::bit_cast<float>(e9);
+        const unsigned int v13 = 0xBF800000;
+        const auto d2 = std::bit_cast<float>(v13);
 
         const float v3 = a1 > a2 ? a1 - a2 : a2 - a1;
         return a1 + v3 * (d1 + d2);
     }
-};
-
-class Data {
-public:
-    explicit Data(
-        const unsigned int seed,
-        const int mini,
-        const int maxi,
-        const float minf,
-        const float maxf
-    ) {
-        this->seed = seed;
-        this->mini = mini;
-        this->maxi = maxi;
-        this->minf = minf;
-        this->maxf = maxf;
-    }
-
-    unsigned int seed;
-    int mini;
-    int maxi;
-    float minf;
-    float maxf;
 };
