@@ -41,27 +41,28 @@ public:
 
     void seed(const unsigned int seed) {
         this->rndacc = seed;
-        this->rndvls = seed + 17 * (seed / 0x2F) << 26 | seed % 0x35 << 18 | 4 * (seed % 0x3D) | seed % 0x3B << 10;
+        this->rndvls = (seed + 17 * (seed / 0x2F)) << 26 | (seed % 0x35) << 18 | 4 * (seed % 0x3D) | (seed % 0x3B) <<
+                       10;
     }
 
     unsigned int rndacc{};
     unsigned int rndvls{};
 
     long long rng() {
-        unsigned int rndvls = this->rndvls;
+        unsigned int rndvl = this->rndvls;
         int v2 = 184;
         int v3 = 200;
         int v4 = 212;
-        if (((unsigned char *) &rndvls)[3] >= 0x4) v2 = -4;
+        if (((unsigned char *) &rndvl)[3] >= 0x4) v2 = -4;
 
-        const signed int v5 = ((unsigned char *) &rndvls)[3] + v2;
-        if ((rndvls & 0xFF0000) >= 0xC0000) v3 = -12;
-        const int v6 = ((unsigned char *) &rndvls)[2] + v3;
-        if (((unsigned char *) &rndvls)[1] >= 0x18u) v4 = -24;
-        const int v7 = ((unsigned char *) &rndvls)[1] + v4;
+        const signed int v5 = ((unsigned char *) &rndvl)[3] + v2;
+        if ((rndvl & 0xFF0000) >= 0xC0000) v3 = -12;
+        const int v6 = ((unsigned char *) &rndvl)[2] + v3;
+        if (((unsigned char *) &rndvl)[1] >= 0x18u) v4 = -24;
+        const int v7 = ((unsigned char *) &rndvl)[1] + v4;
         int v8 = 216;
-        if (static_cast<unsigned char>(rndvls) >= 0x1Cu) v8 = -28;
-        const int v9 = static_cast<unsigned char>(rndvls) + v8;
+        if (static_cast<unsigned char>(rndvl) >= 0x1Cu) v8 = -28;
+        const int v9 = static_cast<unsigned char>(rndvl) + v8;
         const unsigned int v10 = this->rndacc
                                  + (
                                      (*reinterpret_cast<const unsigned int *>((char *) gnoise32_ + v9))
@@ -93,7 +94,7 @@ public:
 
 
     float rand(const float a1, const float a2) {
-        if (0x3456BF95u > static_cast<unsigned int>(a1 - a2) & 0x7FFFFFFF) return a1;
+        if (0x3456BF95u > (static_cast<unsigned int>(a1 - a2) & 0x7FFFFFFF)) return a1;
 
         int e9 = static_cast<int>(rng()) & 0x7FFFFF | 0x3F800000;
 
