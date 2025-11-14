@@ -1,24 +1,5 @@
 #include <iostream>
-
-template<class T>
-T __ROL__(T value, int count) {
-    const unsigned int nbits = sizeof(T) * 8;
-
-    if (count > 0) {
-        count %= nbits;
-        T high = value >> (nbits - count);
-        if (T(-1) < 0) // signed value
-            high &= ~((T(-1) << count));
-        value <<= count;
-        value |= high;
-    } else {
-        count = -count % nbits;
-        T low = value << (nbits - count);
-        value >>= count;
-        value |= low;
-    }
-    return value;
-}
+#include <bit>
 
 using namespace std;
 
@@ -53,27 +34,27 @@ public:
         int v2 = 184;
         int v3 = 200;
         int v4 = 212;
-        if (((unsigned char *) &rndvl)[3] >= 0x4) v2 = -4;
+        if (reinterpret_cast<unsigned char *>(&rndvl)[3] >= 0x4) v2 = -4;
 
-        const signed int v5 = ((unsigned char *) &rndvl)[3] + v2;
+        const signed int v5 = reinterpret_cast<unsigned char *>(&rndvl)[3] + v2;
         if ((rndvl & 0xFF0000) >= 0xC0000) v3 = -12;
-        const int v6 = ((unsigned char *) &rndvl)[2] + v3;
-        if (((unsigned char *) &rndvl)[1] >= 0x18u) v4 = -24;
-        const int v7 = ((unsigned char *) &rndvl)[1] + v4;
+        const int v6 = reinterpret_cast<unsigned char *>(&rndvl)[2] + v3;
+        if (reinterpret_cast<unsigned char *>(&rndvl)[1] >= 0x18u) v4 = -24;
+        const int v7 = reinterpret_cast<unsigned char *>(&rndvl)[1] + v4;
         int v8 = 216;
         if (static_cast<unsigned char>(rndvl) >= 0x1Cu) v8 = -28;
         const int v9 = static_cast<unsigned char>(rndvl) + v8;
         const unsigned int v10 = this->rndacc
                                  + (
-                                     (*reinterpret_cast<const unsigned int *>((char *) gnoise32_ + v9))
-                                     ^ __ROL__(
-                                         (unsigned int) *reinterpret_cast<const unsigned int *>(
+                                     *reinterpret_cast<const unsigned int *>((char *) gnoise32_ + v9)
+                                     ^ std::rotl(
+                                         *reinterpret_cast<const unsigned int *>(
                                              (char *) gnoise32_ + v7), 3)
-                                     ^ __ROL__(
-                                         (unsigned int) *reinterpret_cast<const unsigned int *>(
+                                     ^ std::rotl(
+                                         *reinterpret_cast<const unsigned int *>(
                                              (char *) gnoise32_ + v6), 2)
-                                     ^ __ROL__(
-                                         (unsigned int) *reinterpret_cast<const unsigned int *>(
+                                     ^ std::rotl(
+                                         *reinterpret_cast<const unsigned int *>(
                                              (char *) gnoise32_ + v5), 1)
                                  );
         this->rndvls = v9 | (v7 | (v6 | v5 << 8) << 8) << 8;

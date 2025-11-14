@@ -3,4 +3,4 @@ project(prng)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(prng main.cpp)
+add_executable(prng src/main.cpp)
