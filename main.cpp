@@ -1,7 +1,24 @@
 #include <iostream>
-#include <list>
 
-#include "defs.h"
+template<class T>
+T __ROL__(T value, int count) {
+    const unsigned int nbits = sizeof(T) * 8;
+
+    if (count > 0) {
+        count %= nbits;
+        T high = value >> (nbits - count);
+        if (T(-1) < 0) // signed value
+            high &= ~((T(-1) << count));
+        value <<= count;
+        value |= high;
+    } else {
+        count = -count % nbits;
+        T low = value << (nbits - count);
+        value >>= count;
+        value |= low;
+    }
+    return value;
+}
 
 using namespace std;
 
@@ -35,23 +52,28 @@ public:
         int v2 = 184;
         int v3 = 200;
         int v4 = 212;
-        if (HIBYTE(rndvls) >= 0x4) v2 = -4;
+        if (((unsigned char *) &rndvls)[3] >= 0x4) v2 = -4;
 
-        const signed int v5 = HIBYTE(rndvls) + v2;
+        const signed int v5 = ((unsigned char *) &rndvls)[3] + v2;
         if ((rndvls & 0xFF0000) >= 0xC0000) v3 = -12;
-        const int v6 = BYTE2(rndvls) + v3;
-        if (BYTE1(rndvls) >= 0x18u) v4 = -24;
-        const int v7 = BYTE1(rndvls) + v4;
+        const int v6 = ((unsigned char *) &rndvls)[2] + v3;
+        if (((unsigned char *) &rndvls)[1] >= 0x18u) v4 = -24;
+        const int v7 = ((unsigned char *) &rndvls)[1] + v4;
         int v8 = 216;
         if (static_cast<unsigned char>(rndvls) >= 0x1Cu) v8 = -28;
         const int v9 = static_cast<unsigned char>(rndvls) + v8;
-        Ï
         const unsigned int v10 = this->rndacc
                                  + (
                                      (*reinterpret_cast<const unsigned int *>((char *) gnoise32_ + v9))
-                                     ^ __ROL4__(*reinterpret_cast<const unsigned int *>((char *) gnoise32_ + v7), 3)
-                                     ^ __ROL4__(*reinterpret_cast<const unsigned int *>((char *) gnoise32_ + v6), 2)
-                                     ^ __ROL4__(*reinterpret_cast<const unsigned int *>((char *) gnoise32_ + v5), 1)
+                                     ^ __ROL__(
+                                         (unsigned int) *reinterpret_cast<const unsigned int *>(
+                                             (char *) gnoise32_ + v7), 3)
+                                     ^ __ROL__(
+                                         (unsigned int) *reinterpret_cast<const unsigned int *>(
+                                             (char *) gnoise32_ + v6), 2)
+                                     ^ __ROL__(
+                                         (unsigned int) *reinterpret_cast<const unsigned int *>(
+                                             (char *) gnoise32_ + v5), 1)
                                  );
         this->rndvls = v9 | (v7 | (v6 | v5 << 8) << 8) << 8;
         const long long result = v10;
@@ -108,10 +130,7 @@ public:
 };
 
 
-
-
 int main() {
-
     std::cout << "\n\nSet seed 100500, [-1000.0, 0.0]\n";
     PRNG prng(100500);
     //prng.rng();
